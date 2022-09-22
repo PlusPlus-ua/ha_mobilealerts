@@ -1,0 +1,32 @@
+{
+    "config": {
+        "abort": {
+            "already_configured": "Service is already configured",
+            "no_devices_found": "No devices found on the network",
+            "no_gateways": "No unconfigured gateways found",
+            "unknown": "Unexpected error"
+        },
+        "flow_title": "{name}",
+        "step": {
+            "multiple_gateways": {
+                "data": {
+                    "gateway": "Gateways"
+                },
+                "description": "Select a gateway to setup"
+            },
+            "single_gateway": {
+                "description": "Do you want to setup the {name}?"
+            }
+        }
+    },
+    "options": {
+        "step": {
+            "proxy": {
+                "data": {
+                    "send_data_to_cloud": "Send data to cloud"
+                },
+                "description": "The integration acts as proxy server between gateway and cloud. Would you like to send data to cloud?"
+            }
+        }
+    }
+}

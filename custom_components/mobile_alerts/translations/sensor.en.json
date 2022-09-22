@@ -1,0 +1,17 @@
+{
+    "state": {
+        "mobile_alerts__key_press_type": {
+            "double": "Double",
+            "long": "Long",
+            "none": "None",
+            "short": "Short"
+        },
+        "mobile_alerts__key_pressed": {
+            "green": "Green",
+            "none": "None",
+            "orange": "Orange",
+            "red": "Red",
+            "yellow": "Yellow"
+        }
+    }
+}
