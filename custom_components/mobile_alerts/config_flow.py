@@ -1,6 +1,8 @@
 """Config flow for MobileAlerts."""
+from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any
+import socket
 
 from homeassistant.components import dhcp, onboarding
 from homeassistant.components.network import async_get_source_ip
@@ -10,10 +12,10 @@ from homeassistant.data_entry_flow import FlowResult
 import logging
 import voluptuous as vol
 
+from mobilealerts import Gateway
+
 from .const import CONF_GATEWAY, CONF_SEND_DATA_TO_CLOUD, DOMAIN
 from .util import gateway_full_name, gateway_short_name
-
-from .mobilealerts import Gateway
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -30,7 +32,7 @@ class MobileAlertsOptionsFlowHandler(OptionsFlow):
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Manage the options."""
-        return await self.async_step_proxy()
+        return await self.async_step_proxy(user_input)
 
     async def async_step_proxy(
         self, user_input: dict[str, Any] | None = None
@@ -41,13 +43,18 @@ class MobileAlertsOptionsFlowHandler(OptionsFlow):
 
         return self.async_show_form(
             step_id="proxy",
-            data_schema=vol.Schema({
-                vol.Required(
-                    CONF_SEND_DATA_TO_CLOUD, 
-                    default=self.config_entry.options.get(CONF_SEND_DATA_TO_CLOUD, True),
-                ): bool,
-            }),
+            data_schema=vol.Schema(
+                {
+                    vol.Required(
+                        CONF_SEND_DATA_TO_CLOUD,
+                        default=self.config_entry.options.get(
+                            CONF_SEND_DATA_TO_CLOUD, True
+                        ),
+                    ): bool,
+                }
+            ),
         )
+
 
 class MobileAlertsConfigFlowHandler(ConfigFlow, domain=DOMAIN):
     """Handle a MobileAlerts config flow."""
@@ -102,16 +109,13 @@ class MobileAlertsConfigFlowHandler(ConfigFlow, domain=DOMAIN):
         ip_address = await async_get_source_ip(self.hass)
         try:
             gateways = await Gateway.discover(ip_address)
-        except Exception as err:
+        except socket.error as err:
             _LOGGER.error("Gateways discovery error %r", err)
 
         if len(gateways) == 0:
             return self.async_abort(reason="no_devices_found")
 
-        self._gateways = {
-            gateway.gateway_id: gateway
-            for gateway in gateways
-        }
+        self._gateways = {gateway.gateway_id: gateway for gateway in gateways}
 
         unconfigured_gateways = [
             gateway
@@ -144,11 +148,9 @@ class MobileAlertsConfigFlowHandler(ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Handle a flow initialized by the user."""
-        return await self.async_step_multiple_gateways()
+        return await self.async_step_multiple_gateways(user_input)
 
-    async def async_step_dhcp(
-        self, discovery_info: dhcp.DhcpServiceInfo
-    ) -> FlowResult:
+    async def async_step_dhcp(self, discovery_info: dhcp.DhcpServiceInfo) -> FlowResult:
         """Handle a flow initialized by DHCP discovery."""
         _LOGGER.debug("async_step_dhcp %s", discovery_info)
 
@@ -160,13 +162,12 @@ class MobileAlertsConfigFlowHandler(ConfigFlow, domain=DOMAIN):
         try:
             if not await gateway.init():
                 return self.async_abort(reason="unknown")
-        except:
+        except socket.error as err:
+            _LOGGER.error("Gateways initialization error %r", err)
             return self.async_abort(reason="unknown")
 
         self._gateway = gateway
-        self.context["title_placeholders"] = {
-            "name": gateway_full_name(gateway)
-        }
+        self.context["title_placeholders"] = {"name": gateway_full_name(gateway)}
         return await self.async_step_single_gateway()
 
     @staticmethod

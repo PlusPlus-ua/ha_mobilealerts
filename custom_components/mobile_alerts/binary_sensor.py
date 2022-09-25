@@ -1,8 +1,7 @@
 """Support for MobileAlerts binary sensors."""
-#from __future__ import annotations
+from __future__ import annotations
 
 import copy
-from typing import Any
 
 from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,
@@ -14,10 +13,10 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
+from mobilealerts import MeasurementType, Measurement, Sensor
 
 from .base import MobileAlertesBaseCoordinator, MobileAlertesEntity
 from .const import BINARY_MAEASUREMENT_TYPES, DOMAIN
-from .mobilealerts import MeasurementType, Measurement, Sensor
 
 import logging
 
@@ -27,10 +26,10 @@ low_battery_entity_description = BinarySensorEntityDescription(
     key="battery",
     name="Battery",
     device_class=BinarySensorDeviceClass.BATTERY,
-    entity_category=EntityCategory. DIAGNOSTIC,
+    entity_category=EntityCategory.DIAGNOSTIC,
 )
 
-descriptions: dict[MeasurementType: BinarySensorEntityDescription] = {
+descriptions: dict[MeasurementType:BinarySensorEntityDescription] = {
     MeasurementType.WETNESS: BinarySensorEntityDescription(
         key=None,
         device_class=BinarySensorDeviceClass.MOISTURE,
@@ -49,11 +48,12 @@ descriptions: dict[MeasurementType: BinarySensorEntityDescription] = {
 class MobileAlertesBinarySensor(MobileAlertesEntity, BinarySensorEntity):
     """Representation of a MobileAlertes binary sensor."""
 
-    def __init__(self,
-                 coordinator: MobileAlertesBaseCoordinator,
-                 sensor: Sensor,
-                 measurement: Measurement | None
-                 ) -> None:
+    def __init__(
+        self,
+        coordinator: MobileAlertesBaseCoordinator,
+        sensor: Sensor,
+        measurement: Measurement | None,
+    ) -> None:
         """Initialize the sensor."""
         super().__init__(coordinator, sensor, measurement)
         description: BinarySensorEntityDescription = None
@@ -81,7 +81,7 @@ class MobileAlertesBinarySensor(MobileAlertesEntity, BinarySensorEntity):
 
     def update_data_from_last_state(self) -> None:
         """Update data from stored last state."""
-        self._attr_is_on = self._last_state.state == 'on'
+        self._attr_is_on = self._last_state.state == "on"
         _LOGGER.debug("update_data_from_last_state %s", self._attr_is_on)
 
 
@@ -89,6 +89,7 @@ def create_binary_sensor_entities(
     coordinator: MobileAlertesBaseCoordinator,
     sensor: Sensor,
 ) -> list[MobileAlertesBinarySensor]:
+    """Create list of binary sensor entities"""
     entities = [
         MobileAlertesBinarySensor(coordinator, sensor, measurement)
         for measurement in sensor.measurements
@@ -103,6 +104,7 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
+    """Set up the MobileAlerts binary sensors."""
     _LOGGER.debug("async_setup_entry %s", entry)
 
     coordinator: MobileAlertesBaseCoordinator = hass.data[DOMAIN][entry.entry_id]

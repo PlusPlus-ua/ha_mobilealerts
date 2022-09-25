@@ -1,9 +1,11 @@
 """Constants for the MobileAlerts integration."""
 
-from homeassistant.backports.enum import StrEnum
 from typing import Final
 
-from .mobilealerts import MeasurementType
+from homeassistant.backports.enum import StrEnum
+
+from mobilealerts import MeasurementType
+
 
 DOMAIN: Final = "mobile_alerts"
 
@@ -26,11 +28,13 @@ STATE_ATTR_EXTRA: set[str] = {
     STATE_ATTR_PRIOR_VALUE,
 }
 
+
 class MobileAlertsDeviceClass(StrEnum):
     """MobileAlerts specific device classes, used for translations."""
 
     KEY_PRESSED = "mobile_alerts__key_pressed"
     KEY_PRESS_TYPE = "mobile_alerts__key_press_type"
+
 
 BINARY_MAEASUREMENT_TYPES: set[MeasurementType] = {
     MeasurementType.WETNESS,
@@ -38,6 +42,19 @@ BINARY_MAEASUREMENT_TYPES: set[MeasurementType] = {
     MeasurementType.DOOR_WINDOW,
 }
 
+ENUM_MAEASUREMENT_TYPES: set[MeasurementType] = {
+    MeasurementType.KEY_PRESSED,
+    MeasurementType.KEY_PRESS_TYPE,
+}
 
-
-
+FLOAT_MAEASUREMENT_TYPES: set[MeasurementType] = {
+    MeasurementType.TEMPERATURE,
+    MeasurementType.HUMIDITY,
+    MeasurementType.CO2,
+    MeasurementType.AIR_PRESSURE,
+    MeasurementType.RAIN,
+    MeasurementType.TIME_SPAN,
+    MeasurementType.WIND_SPEED,
+    MeasurementType.GUST,
+    MeasurementType.WIND_DIRECTION,
+}

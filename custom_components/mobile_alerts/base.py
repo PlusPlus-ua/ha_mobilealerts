@@ -4,12 +4,11 @@ from __future__ import annotations
 from typing import Any
 
 import dataclasses
-from datetime import datetime
-from xmlrpc.client import Boolean
+from datetime import datetime, timedelta
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import callback, HomeAssistant, State
-from homeassistant.helpers import area_registry as ar
+from homeassistant.helpers import area_registry as ar, device_registry as dr
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.restore_state import ExtraStoredData, RestoreEntity
 from homeassistant.helpers.update_coordinator import (
@@ -17,9 +16,11 @@ from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
 )
 
+from mobilealerts import Gateway, MeasurementError, Measurement, Proxy, Sensor
 
 from .const import (
     DOMAIN,
+    GATEWAY_DEF_NAME,
     MANUFACTURER,
     STATE_ATTR_BY_EVENT,
     STATE_ATTR_ERROR,
@@ -28,8 +29,7 @@ from .const import (
     STATE_ATTR_PRIOR_VALUE,
     STATE_ATTR_RESTORED,
 )
-
-from .mobilealerts import Gateway, MeasurementError, Measurement, Proxy, Sensor
+from .util import gateway_full_name
 
 import logging
 
@@ -37,13 +37,10 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class MobileAlertesBaseCoordinator(DataUpdateCoordinator):
+    """Base class to manage MobileAlerts data."""
 
     def __init__(
-        self,
-        hass: HomeAssistant,
-        entry: ConfigEntry,
-        proxy: Proxy,
-        gateway: Gateway
+        self, hass: HomeAssistant, entry: ConfigEntry, proxy: Proxy, gateway: Gateway
     ) -> None:
         """Initialize coordinator."""
         super().__init__(
@@ -51,15 +48,46 @@ class MobileAlertesBaseCoordinator(DataUpdateCoordinator):
             _LOGGER,
             # Name of the data. For logging purposes.
             name=DOMAIN,
+            update_interval=timedelta(seconds=60),
         )
         self._entry: ConfigEntry = entry
         self._proxy: Proxy = proxy
         self._gateway: Gateway = gateway
+        self._gateway_ip: str | None = gateway.ip_address
         self._proxy.set_handler(self)
+
+    async def async_get_or_create_gateway_device(self) -> None:         
+        _id = self._gateway.gateway_id
+        mac = ":".join(a + b for a, b in zip(_id[::2], _id[1::2]))
+        device_registry = dr.async_get(self.hass)
+        _LOGGER.debug("async_get_or_create_gateway_device %s %s", self._gateway.gateway_id, self._gateway.url)
+        device_registry.async_get_or_create(
+            config_entry_id=self._entry.entry_id,
+            configuration_url=self._gateway.url,
+            identifiers={(DOMAIN, _id)},
+            connections={(dr.CONNECTION_NETWORK_MAC, mac)},
+            name=gateway_full_name(self._gateway),
+            model=GATEWAY_DEF_NAME,
+            manufacturer=MANUFACTURER,
+            hw_version=self._gateway.version,
+        )
+
+    async def _async_update_data(self):
+        """Update state of the gateway."""
+        _LOGGER.debug("_async_update_data")
+        await self._gateway.ping(True)
+        if self._gateway_ip != self._gateway.ip_address:
+            await self.async_get_or_create_gateway_device()
 
     @property
     def gateway(self) -> Gateway:
+        """MobileAlerts gateway."""
         return self._gateway
+
+    @property
+    def proxy(self) -> Proxy:
+        """MobileAlerts proxy."""
+        return self._proxy
 
 
 @dataclasses.dataclass
@@ -90,12 +118,13 @@ class MobileAlertesEntity(CoordinatorEntity, RestoreEntity):
     _attr_has_entity_name = True
     _attr_should_poll = False
 
-    def __init__(self,
-                 coordinator: Any,
-                 sensor: Sensor,
-                 measurement: Measurement | None
-                 ) -> None:
-        _LOGGER.debug("MobileAlertesEntity(%r, %r, %r)", coordinator, sensor, measurement)
+    def __init__(
+        self, coordinator: MobileAlertesBaseCoordinator, sensor: Sensor, measurement: Measurement | None
+    ) -> None:
+        """Initialize entity."""
+        _LOGGER.debug(
+            "MobileAlertesEntity(%r, %r, %r)", coordinator, sensor, measurement
+        )
         super().__init__(coordinator)
         self._sensor = sensor
         self._measurement = measurement
@@ -106,10 +135,12 @@ class MobileAlertesEntity(CoordinatorEntity, RestoreEntity):
 
     @property
     def sensor(self) -> Sensor:
+        """MobileAlerts sensor."""
         return self._sensor
 
     @property
     def measurement(self) -> Measurement | None:
+        """One measurement of MobileAlerts sensor."""
         return self._measurement
 
     @property
@@ -149,19 +180,24 @@ class MobileAlertesEntity(CoordinatorEntity, RestoreEntity):
             self.update_data_from_sensor()
             updated = True
         elif self._last_state is not None:
-            _LOGGER.debug("_handle_coordinator_update self._last_state.state %s", self._last_state.state)
+            _LOGGER.debug(
+                "_handle_coordinator_update self._last_state.state %s",
+                self._last_state.state,
+            )
             self.update_data_from_last_state()
             updated = True
 
         if updated and self._added_to_hass:
             attr: dict[str, Any] = {}
             if self._sensor.last_update is not None:
-                attr[STATE_ATTR_LAST_UPDATE] = datetime.fromtimestamp(self._sensor.timestamp).isoformat()
+                attr[STATE_ATTR_LAST_UPDATE] = datetime.fromtimestamp(
+                    self._sensor.timestamp
+                ).isoformat()
                 if self._measurement:
                     attr[STATE_ATTR_BY_EVENT] = self._sensor.by_event
                     if self._measurement.has_prior_value:
                         attr[STATE_ATTR_PRIOR_VALUE] = self._measurement.prior_value
-                    if type(self._measurement.value) is MeasurementError:
+                    if isinstance(self._measurement.value, MeasurementError):
                         attr[STATE_ATTR_ERROR] = self._measurement.value_str
                 self._extra_state_attributes = attr
             elif self._last_extra_data is not None:
@@ -177,16 +213,30 @@ class MobileAlertesEntity(CoordinatorEntity, RestoreEntity):
 
     def update_data_from_sensor(self) -> None:
         """Update data from the sensor."""
-        pass
 
     def update_data_from_last_state(self) -> None:
         """Update data from stored last state."""
-        pass
 
     @property
     def available(self) -> bool:
         """Return if entity is available."""
-        result: bool = self._sensor.last_update is not None or self._last_state is not None
+        result: bool = False
+        last_update: float = 0
+        if self._sensor.last_update is not None:
+            last_update = self._sensor.timestamp
+            _LOGGER.debug("self._sensor.last_update is not None %s", datetime.fromtimestamp(last_update).isoformat())
+        elif self._last_extra_data is not None:
+            last_update_iso = self._last_extra_data.as_dict().get(STATE_ATTR_LAST_UPDATE, None)
+            _LOGGER.debug("self._last_extra_data is not None %s", last_update_iso)
+            if last_update_iso is not None:
+                last_update = datetime.fromisoformat(last_update_iso).timestamp()
+            _LOGGER.debug("self._last_extra_data is not None %s", datetime.fromtimestamp(last_update).isoformat())
+        if last_update == 0 or self._sensor.update_period == 0:
+            result = self._sensor.parent.is_online
+            _LOGGER.debug("result = self._sensor.parent.is_online")
+        else:
+            result = (last_update + self._sensor.update_period * 2.1) >= datetime.now().timestamp()
+            _LOGGER.debug("(last_update + self._sensor.update_period * 1.1) >= datetime.now().timestamp()")
         _LOGGER.debug("available %s", result)
         return result
 
