@@ -6,11 +6,11 @@
   "config_flow": true,
   "documentation": "https://www.home-assistant.io/integrations/mobile_alerts",
   "dependencies": ["network"],
-  "requirements": ["mobilealerts==0.1.4"],
+  "requirements": ["mobilealerts==0.1.5"],
   "supported_brands": { "tfa_weatherhub": "TFA WeatherHub" },
   "dhcp": [
     { "registered_devices": true },
     { "macaddress": "001D8C*" }
   ],
-  "version": "0.1.0"
+  "version": "0.1.1"
 }
