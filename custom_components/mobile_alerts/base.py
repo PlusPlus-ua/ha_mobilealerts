@@ -60,8 +60,8 @@ class MobileAlertesBaseCoordinator(DataUpdateCoordinator):
         _id = self._gateway.gateway_id
         mac = ":".join(a + b for a, b in zip(_id[::2], _id[1::2]))
         device_registry = dr.async_get(self.hass)
-        _LOGGER.debug("async_get_or_create_gateway_device %s %s", self._gateway.gateway_id, self._gateway.url)
-        device_registry.async_get_or_create(
+        _LOGGER.debug("async_get_or_create_gateway_device id: %s, entry_id: %s, mac: %s", _id, self._entry.entry_id, mac)
+        device_entry = device_registry.async_get_or_create(
             config_entry_id=self._entry.entry_id,
             configuration_url=self._gateway.url,
             identifiers={(DOMAIN, _id)},
@@ -71,6 +71,7 @@ class MobileAlertesBaseCoordinator(DataUpdateCoordinator):
             manufacturer=MANUFACTURER,
             hw_version=self._gateway.version,
         )
+        _LOGGER.debug("async_get_or_create_gateway_device device: %s", device_entry)
 
     async def _async_update_data(self):
         """Update state of the gateway."""
@@ -235,8 +236,8 @@ class MobileAlertesEntity(CoordinatorEntity, RestoreEntity):
             result = self._sensor.parent.is_online
             _LOGGER.debug("result = self._sensor.parent.is_online")
         else:
-            result = (last_update + self._sensor.update_period * 2.1) >= datetime.now().timestamp()
-            _LOGGER.debug("(last_update + self._sensor.update_period * 1.1) >= datetime.now().timestamp()")
+            result = (last_update + self._sensor.update_period * 3.1) >= datetime.now().timestamp()
+            _LOGGER.debug("(last_update + self._sensor.update_period * 3.1) >= datetime.now().timestamp()")
         _LOGGER.debug("available %s", result)
         return result
 
