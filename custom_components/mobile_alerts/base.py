@@ -15,6 +15,7 @@ from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
     DataUpdateCoordinator,
 )
+from homeassistant.util.dt import as_timestamp, as_utc
 
 from mobilealerts import Gateway, MeasurementError, Measurement, Proxy, Sensor
 
@@ -191,9 +192,9 @@ class MobileAlertesEntity(CoordinatorEntity, RestoreEntity):
         if updated and self._added_to_hass:
             attr: dict[str, Any] = {}
             if self._sensor.last_update is not None:
-                attr[STATE_ATTR_LAST_UPDATE] = datetime.fromtimestamp(
+                attr[STATE_ATTR_LAST_UPDATE] = as_utc(datetime.fromtimestamp(
                     self._sensor.timestamp
-                ).isoformat()
+                )).isoformat()
                 if self._measurement:
                     attr[STATE_ATTR_BY_EVENT] = self._sensor.by_event
                     if self._measurement.has_prior_value:
@@ -225,19 +226,18 @@ class MobileAlertesEntity(CoordinatorEntity, RestoreEntity):
         last_update: float = 0
         if self._sensor.last_update is not None:
             last_update = self._sensor.timestamp
-            _LOGGER.debug("self._sensor.last_update is not None %s", datetime.fromtimestamp(last_update).isoformat())
+            _LOGGER.debug("self._sensor.last_update is not None %s %s", last_update, datetime.fromtimestamp(last_update).isoformat())
         elif self._last_extra_data is not None:
-            last_update_iso = self._last_extra_data.as_dict().get(STATE_ATTR_LAST_UPDATE, None)
-            _LOGGER.debug("self._last_extra_data is not None %s", last_update_iso)
-            if last_update_iso is not None:
-                last_update = datetime.fromisoformat(last_update_iso).timestamp()
-            _LOGGER.debug("self._last_extra_data is not None %s", datetime.fromtimestamp(last_update).isoformat())
-        if last_update == 0 or self._sensor.update_period == 0:
+            last_update_str = self._last_extra_data.as_dict().get(STATE_ATTR_LAST_UPDATE, None)
+            _LOGGER.debug("self._last_extra_data is not None '%s'", last_update_str)
+            if last_update_str is not None:
+                last_update = as_timestamp(last_update_str)
+                _LOGGER.debug("self._last_extra_data is not None %s", datetime.fromtimestamp(last_update).isoformat())
+        if last_update < 1 or self._sensor.update_period == 0:
             result = self._sensor.parent.is_online
             _LOGGER.debug("result = self._sensor.parent.is_online")
         else:
-            result = (last_update + self._sensor.update_period * 3.1) >= datetime.now().timestamp()
-            _LOGGER.debug("(last_update + self._sensor.update_period * 3.1) >= datetime.now().timestamp()")
+            result = (last_update + self._sensor.update_period * 5.1) >= datetime.now().timestamp()
         _LOGGER.debug("available %s", result)
         return result
 
