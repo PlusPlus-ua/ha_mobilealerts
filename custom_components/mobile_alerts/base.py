@@ -203,8 +203,9 @@ class MobileAlertesEntity(CoordinatorEntity, RestoreEntity):
                 self._extra_state_attributes = attr
             elif self._last_extra_data is not None:
                 self._extra_state_attributes = self._last_extra_data.as_dict()
-                attr[STATE_ATTR_RESTORED] = True
-                attr |= self._extra_state_attributes
+                if self._extra_state_attributes is not None:
+                    attr[STATE_ATTR_RESTORED] = True
+                    attr |= self._extra_state_attributes
 
             _LOGGER.debug("extra_state_attributes %s", attr)
 
@@ -227,8 +228,10 @@ class MobileAlertesEntity(CoordinatorEntity, RestoreEntity):
             last_update = self._sensor.timestamp
             _LOGGER.debug("self._sensor.last_update is not None %s", datetime.fromtimestamp(last_update).isoformat())
         elif self._last_extra_data is not None:
-            last_update_iso = self._last_extra_data.as_dict().get(STATE_ATTR_LAST_UPDATE, None)
-            _LOGGER.debug("self._last_extra_data is not None %s", last_update_iso)
+            extra_state_attributes = self._last_extra_data.as_dict()
+            if extra_state_attributes is not None:
+                last_update_iso = extra_state_attributes.get(STATE_ATTR_LAST_UPDATE, None)
+                _LOGGER.debug("self._last_extra_data is not None %s", last_update_iso)
             if last_update_iso is not None:
                 last_update = datetime.fromisoformat(last_update_iso).timestamp()
             _LOGGER.debug("self._last_extra_data is not None %s", datetime.fromtimestamp(last_update).isoformat())
@@ -236,8 +239,8 @@ class MobileAlertesEntity(CoordinatorEntity, RestoreEntity):
             result = self._sensor.parent.is_online
             _LOGGER.debug("result = self._sensor.parent.is_online")
         else:
-            result = (last_update + self._sensor.update_period * 3.1) >= datetime.now().timestamp()
-            _LOGGER.debug("(last_update + self._sensor.update_period * 3.1) >= datetime.now().timestamp()")
+            result = (last_update + self._sensor.update_period * 10.1) >= datetime.now().timestamp()
+            _LOGGER.debug("(last_update + self._sensor.update_period * 10.1) >= datetime.now().timestamp()")
         _LOGGER.debug("available %s", result)
         return result
 

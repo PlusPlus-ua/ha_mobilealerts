@@ -36,18 +36,18 @@ class MobileAlertsDeviceClass(StrEnum):
     KEY_PRESS_TYPE = "mobile_alerts__key_press_type"
 
 
-BINARY_MAEASUREMENT_TYPES: set[MeasurementType] = {
+BINARY_MEASUREMENT_TYPES: set[MeasurementType] = {
     MeasurementType.WETNESS,
     MeasurementType.ALARM,
     MeasurementType.DOOR_WINDOW,
 }
 
-ENUM_MAEASUREMENT_TYPES: set[MeasurementType] = {
+ENUM_MEASUREMENT_TYPES: set[MeasurementType] = {
     MeasurementType.KEY_PRESSED,
     MeasurementType.KEY_PRESS_TYPE,
 }
 
-FLOAT_MAEASUREMENT_TYPES: set[MeasurementType] = {
+FLOAT_MEASUREMENT_TYPES: set[MeasurementType] = {
     MeasurementType.TEMPERATURE,
     MeasurementType.HUMIDITY,
     MeasurementType.CO2,
