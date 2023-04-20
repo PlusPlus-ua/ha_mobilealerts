@@ -4,20 +4,19 @@ from __future__ import annotations
 
 from typing import Any
 
+import logging
+
 from homeassistant.components.network import async_get_source_ip
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr
-
 from mobilealerts import Gateway, Proxy, Sensor
 
-from .coordinator import MobileAlertesDataCoordinator
 from .const import CONF_SEND_DATA_TO_CLOUD, DOMAIN
+from .coordinator import MobileAlertesDataCoordinator
 from .util import gateway_full_name
-
-import logging
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -78,7 +77,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     _LOGGER.debug("async_unload_entry %r", entry.as_dict())
     coordinator: MobileAlertesDataCoordinator = hass.data[DOMAIN][entry.entry_id]
 
-    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    unload_ok: bool = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unload_ok:
         hass.data[DOMAIN].pop(entry.entry_id)
         await coordinator.proxy.stop()

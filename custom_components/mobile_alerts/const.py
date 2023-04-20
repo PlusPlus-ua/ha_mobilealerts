@@ -1,11 +1,9 @@
 """Constants for the MobileAlerts integration."""
 
-from typing import Final
+from typing_extensions import Final
 
 from homeassistant.backports.enum import StrEnum
-
 from mobilealerts import MeasurementType
-
 
 DOMAIN: Final = "mobile_alerts"
 
@@ -17,24 +15,17 @@ CONF_SEND_DATA_TO_CLOUD: Final = "send_data_to_cloud"
 
 STATE_ATTR_BY_EVENT: Final = "by_event"
 STATE_ATTR_ERROR: Final = "error"
-STATE_ATTR_LAST_UPDATE: Final = "last_update"
+STATE_ATTR_LAST_UPDATED: Final = "last_updated"
 STATE_ATTR_PRIOR_VALUE: Final = "prior_value"
-STATE_ATTR_RESTORED: Final = "restored"
+STATE_ATTR_MEASUREMTS: Final = "measurements"
 
 STATE_ATTR_EXTRA: set[str] = {
     STATE_ATTR_BY_EVENT,
     STATE_ATTR_ERROR,
-    STATE_ATTR_LAST_UPDATE,
+    STATE_ATTR_LAST_UPDATED,
     STATE_ATTR_PRIOR_VALUE,
+    STATE_ATTR_MEASUREMTS,
 }
-
-
-class MobileAlertsDeviceClass(StrEnum):
-    """MobileAlerts specific device classes, used for translations."""
-
-    KEY_PRESSED = "mobile_alerts__key_pressed"
-    KEY_PRESS_TYPE = "mobile_alerts__key_press_type"
-
 
 BINARY_MEASUREMENT_TYPES: set[MeasurementType] = {
     MeasurementType.WETNESS,
@@ -58,3 +49,5 @@ FLOAT_MEASUREMENT_TYPES: set[MeasurementType] = {
     MeasurementType.GUST,
     MeasurementType.WIND_DIRECTION,
 }
+
+LAST_RAIN_PERIOD = 15.0 * 60.0

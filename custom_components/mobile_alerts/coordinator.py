@@ -1,15 +1,14 @@
 """Data update coordinator for the MobileAlerts integration."""
 from __future__ import annotations
 
-from homeassistant.const import Platform
+import logging
 
+from homeassistant.const import Platform
 from mobilealerts import Gateway, Sensor, SensorHandler
 
 from .base import MobileAlertesBaseCoordinator
 from .binary_sensor import create_binary_sensor_entities
 from .sensor import create_sensor_entities
-
-import logging
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -20,7 +19,7 @@ class MobileAlertesDataCoordinator(MobileAlertesBaseCoordinator, SensorHandler):
     @property
     def gateway(self) -> Gateway:
         return self._gateway
-
+    
     async def sensor_added(self, sensor: Sensor) -> None:
         _LOGGER.debug("sensor_added %r", sensor)
 

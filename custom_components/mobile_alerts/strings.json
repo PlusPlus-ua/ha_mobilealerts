@@ -9,7 +9,10 @@
         }
       },
       "single_gateway": {
-        "description": "Do you want to setup the {name}?"
+        "data": {
+          "send_data_to_cloud": "Send data to cloud"
+        },
+        "description": "Do you want to setup the {name}?\n\nThe integration acts as proxy server between gateway and cloud. Sensors will appear as soon as they send data to the gateway. For some sensors, it may take up to few hours. Would you like to send data to cloud?"
       }
     },
     "abort": {
@@ -26,6 +29,124 @@
           "send_data_to_cloud": "Send data to cloud"
         },
         "description": "The integration acts as proxy server between gateway and cloud. Would you like to send data to cloud?"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "battery": {
+        "name": "[%key:component::binary_sensor::entity_component::battery::name%]"
+      },
+      "is_raining": {
+        "name": "Is raining"
+      },
+      "wetness": {
+        "name": "Wetness"
+      },
+      "alarm": {
+        "name": "[%key:component::binary_sensor::entity_component::smoke::name%]"
+      },
+      "alarm_1": {
+        "name": "[%key:component::binary_sensor::entity_component::smoke::name%] 1"
+      },
+      "alarm_2": {
+        "name": "[%key:component::binary_sensor::entity_component::smoke::name%] 2"
+      },
+      "alarm_3": {
+        "name": "[%key:component::binary_sensor::entity_component::smoke::name%] 3"
+      },
+      "alarm_4": {
+        "name": "[%key:component::binary_sensor::entity_component::smoke::name%] 4"
+      },
+      "door_window": {
+        "name": "[%key:component::binary_sensor::entity_component::window::name%]"
+      },
+      "use_proxy": {
+        "name": "Proxy is used"
+      }      
+    },
+    "sensor": {
+      "temperature": {
+        "name": "[%key:component::sensor::entity_component::temperature::name%]"
+      },
+      "cable_temperature": {
+        "name": "Cable temperature"
+      },
+      "external_temperature": {
+        "name": "External temperature"
+      },
+      "external_temperature_1": {
+        "name": "External temperature 1"
+      },
+      "external_temperature_2": {
+        "name": "External temperature 2"
+      },
+      "external_temperature_3": {
+        "name": "External temperature 3"
+      },
+      "external_temperature_4": {
+        "name": "External temperature 4"
+      },
+      "outdoor_temperature": {
+        "name": "Outdoor temperature"
+      },
+      "pool_temperature": {
+        "name": "Pool temperature"
+      },
+      "humidity": {
+        "name": "[%key:component::sensor::entity_component::humidity::name%]"
+      },
+      "co2": {
+        "name": "[%key:component::sensor::entity_component::carbon_dioxide::name%]"
+      },
+      "air_pressure": {
+        "name": "[%key:component::sensor::entity_component::atmospheric_pressure::name%]"
+      },
+      "accumulated_rain": {
+        "name": "Accumulated rain"
+      },
+      "last_rain": {
+        "name": "Last rain"
+      },
+      "last_hour_rain": {
+        "name": "Last hour rain"
+      },
+      "last_day_rain": {
+        "name": "Last hour rain"
+      },
+      "time_span": {
+        "name": "Time span"
+      },
+      "wind_speed": {
+        "name": "[%key:component::sensor::entity_component::wind_speed::name%]"
+      },
+      "gust": {
+        "name": "Gust"
+      },
+      "wind_direction": {
+        "name": "Wind direction"
+      },
+      "proxy": {
+        "name": "Proxy"
+      },
+      "key_pressed": {
+        "name": "Key pressed",
+        "state": {
+          "none": "None",
+          "green": "Green",
+          "orange": "Orange",
+          "red": "Red",
+          "yellow": "Yellow"
+        }
+      },
+      "key_press_type": {
+        "name": "Key press type",
+        "state": {
+          "none": "None",
+          "short": "Short",
+          "double": "Double",
+          "long": "Long"
+        }
       }
     }
   }
