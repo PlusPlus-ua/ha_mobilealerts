@@ -1,5 +1,7 @@
 # Home Assistant support for Mobile-Alerts
 
+## Overview
+
 This integration supports various Mobile-Alerts sensors. The integration acts as proxy server between Mobile-Alerts gateway and cloud. 
 
 _Based on MMMMobileAlerts by [@sarnau](https://github.com/sarnau/MMMMobileAlerts)
