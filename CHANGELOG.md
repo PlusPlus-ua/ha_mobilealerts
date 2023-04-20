@@ -9,4 +9,4 @@ and this project adheres to [Semantic Versioning].
 
 ### Changed
 
-- Cahnged handling of rain sensor.
+- Improved handling of rain sensor.
