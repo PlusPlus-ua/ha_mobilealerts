@@ -112,7 +112,7 @@
         "name": "Last hour rain"
       },
       "last_day_rain": {
-        "name": "Last hour rain"
+        "name": "Last day rain"
       },
       "time_span": {
         "name": "Time span"
