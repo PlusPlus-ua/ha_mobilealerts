@@ -16,9 +16,9 @@
             },
             "single_gateway": {
                 "data": {
-                    "send_data_to_cloud": "Adtok küldése felhőbe"
+                    "send_data_to_cloud": "Adatok küldése felhőbe"
                 },
-                "description": "Szeretné beállítani a(z) {name} eszközt? \n\nAz integráció proxyszerverként működik a központ (átjáró) és a felhő között. Az érzékelők azonnal megjelennek, amint adatokat küldenek a központnak. Egyes érzékelők esetében előfordulhat néhány órára csúszás. Szeretnél adatokat küldeni a felhőbe?"
+                "description": "Szeretné beállítani a(z) {name} eszközt? \n\nAz integráció proxyszerverként működik a központ (átjáró) és a felhő között. Az érzékelők azonnal megjelennek, amint adatokat küldenek a központnak (átjárónak). Egyes érzékelők esetében azonban előfordulhat néhány órára késleltetés. Szeretnél adatokat küldeni a felhőbe?"
             }
         }
     },
