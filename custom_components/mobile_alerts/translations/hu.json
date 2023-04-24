@@ -1,0 +1,153 @@
+{
+    "config": {
+        "abort": {
+            "already_configured": "Szolgáltataás beállítva",
+            "no_devices_found": "Nincs eszköz a hálózaton",
+            "no_gateways": "Nincs központ a hálózaton",
+            "unknown": "Azonosítatlan hiba"
+        },
+        "flow_title": "{name}",
+        "step": {
+            "multiple_gateways": {
+                "data": {
+                    "gateway": "Központ"
+                },
+                "description": "Válaszd ki a központot"
+            },
+            "single_gateway": {
+                "data": {
+                    "send_data_to_cloud": "Adtok küldése felhőbe"
+                },
+                "description": "Do you want to setup the {name}?\n\nThe integration acts as proxy server between gateway and cloud. Sensors will appear as soon as they send data to the gateway. For some sensors, it may take up to few hours. Would you like to send data to cloud?"
+            }
+        }
+    },
+    "entity": {
+        "binary_sensor": {
+            "alarm": {
+                "name": "Smoke"
+            },
+            "alarm_1": {
+                "name": "Smoke 1"
+            },
+            "alarm_2": {
+                "name": "Smoke 2"
+            },
+            "alarm_3": {
+                "name": "Smoke 3"
+            },
+            "alarm_4": {
+                "name": "Smoke 4"
+            },
+            "battery": {
+                "name": "Battery"
+            },
+            "door_window": {
+                "name": "Window"
+            },
+            "is_raining": {
+                "name": "Is raining"
+            },
+            "use_proxy": {
+                "name": "Proxy is used"
+            },
+            "wetness": {
+                "name": "Wetness"
+            }
+        },
+        "sensor": {
+            "accumulated_rain": {
+                "name": "Accumulated rain"
+            },
+            "air_pressure": {
+                "name": "Atmospheric pressure"
+            },
+            "cable_temperature": {
+                "name": "Cable temperature"
+            },
+            "co2": {
+                "name": "Carbon dioxide"
+            },
+            "external_temperature": {
+                "name": "External temperature"
+            },
+            "external_temperature_1": {
+                "name": "External temperature 1"
+            },
+            "external_temperature_2": {
+                "name": "External temperature 2"
+            },
+            "external_temperature_3": {
+                "name": "External temperature 3"
+            },
+            "external_temperature_4": {
+                "name": "External temperature 4"
+            },
+            "gust": {
+                "name": "Gust"
+            },
+            "humidity": {
+                "name": "Humidity"
+            },
+            "key_press_type": {
+                "name": "Key press type",
+                "state": {
+                    "double": "Double",
+                    "long": "Long",
+                    "none": "None",
+                    "short": "Short"
+                }
+            },
+            "key_pressed": {
+                "name": "Key pressed",
+                "state": {
+                    "green": "Green",
+                    "none": "None",
+                    "orange": "Orange",
+                    "red": "Red",
+                    "yellow": "Yellow"
+                }
+            },
+            "last_day_rain": {
+                "name": "Last day rain"
+            },
+            "last_hour_rain": {
+                "name": "Last hour rain"
+            },
+            "last_rain": {
+                "name": "Last rain"
+            },
+            "outdoor_temperature": {
+                "name": "Outdoor temperature"
+            },
+            "pool_temperature": {
+                "name": "Pool temperature"
+            },
+            "proxy": {
+                "name": "Proxy"
+            },
+            "temperature": {
+                "name": "Temperature"
+            },
+            "time_span": {
+                "name": "Time span"
+            },
+            "wind_direction": {
+                "name": "Wind direction"
+            },
+            "wind_speed": {
+                "name": "Wind speed"
+            }
+        }
+    },
+    "options": {
+        "step": {
+            "proxy": {
+                "data": {
+                    "send_data_to_cloud": "Send data to cloud"
+                },
+                "description": "The integration acts as proxy server between gateway and cloud. Would you like to send data to cloud?"
+            }
+        }
+    }
+}
