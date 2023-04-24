@@ -4,7 +4,7 @@
             "already_configured": "Szolgáltataás beállítva",
             "no_devices_found": "Nincs eszköz a hálózaton",
             "no_gateways": "Nincs központ(átjáró) a hálózaton",
-            "unknown": "Azonosítatlan hiba"
+            "unknown": "Ismeretlen hiba"
         },
         "flow_title": "{name}",
         "step": {
