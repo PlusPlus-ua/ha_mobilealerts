@@ -109,7 +109,7 @@
                 }
             },
             "last_day_rain": {
-                "name": "Last hour rain"
+                "name": "Last day rain"
             },
             "last_hour_rain": {
                 "name": "Last hour rain"

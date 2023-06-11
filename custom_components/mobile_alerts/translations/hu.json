@@ -1,0 +1,153 @@
+{
+    "config": {
+        "abort": {
+            "already_configured": "Szolgáltataás beállítva",
+            "no_devices_found": "Nincs eszköz a hálózaton",
+            "no_gateways": "Nincs központ(átjáró) a hálózaton",
+            "unknown": "Ismeretlen hiba"
+        },
+        "flow_title": "{name}",
+        "step": {
+            "multiple_gateways": {
+                "data": {
+                    "gateway": "Központ (átjáró)"
+                },
+                "description": "Válaszd ki a központot (átjáró) "
+            },
+            "single_gateway": {
+                "data": {
+                    "send_data_to_cloud": "Adatok küldése felhőbe"
+                },
+                "description": "Szeretné beállítani a(z) {name} eszközt? \n\nAz integráció proxyszerverként működik a központ (átjáró) és a felhő között. Az érzékelők azonnal megjelennek, amint adatokat küldenek a központnak (átjárónak). Egyes érzékelők esetében azonban előfordulhat néhány órára késleltetés. Szeretnél adatokat küldeni a felhőbe?"
+            }
+        }
+    },
+    "entity": {
+        "binary_sensor": {
+            "alarm": {
+                "name": "Füst"
+            },
+            "alarm_1": {
+                "name": "Füst 1"
+            },
+            "alarm_2": {
+                "name": "Füst 2"
+            },
+            "alarm_3": {
+                "name": "Füst 3"
+            },
+            "alarm_4": {
+                "name": "Füst 4"
+            },
+            "battery": {
+                "name": "Elem"
+            },
+            "door_window": {
+                "name": "Ablak"
+            },
+            "is_raining": {
+                "name": "Esik"
+            },
+            "use_proxy": {
+                "name": "Proxy használatban"
+            },
+            "wetness": {
+                "name": "Nedves"
+            }
+        },
+        "sensor": {
+            "accumulated_rain": {
+                "name": "Összes csapadék"
+            },
+            "air_pressure": {
+                "name": "Légnyomás"
+            },
+            "cable_temperature": {
+                "name": "Kábel hőmérséklet"
+            },
+            "co2": {
+                "name": "Széndioxid"
+            },
+            "external_temperature": {
+                "name": "Külső hőmérséklet"
+            },
+            "external_temperature_1": {
+                "name": "Külső hőmérséklet 1"
+            },
+            "external_temperature_2": {
+                "name": "Külső hőmérséklet 2"
+            },
+            "external_temperature_3": {
+                "name": "Külső hőmérséklet 3"
+            },
+            "external_temperature_4": {
+                "name": "Külső hőmérséklet 4"
+            },
+            "gust": {
+                "name": "Széllökés"
+            },
+            "humidity": {
+                "name": "Páratartalom"
+            },
+            "key_press_type": {
+                "name": "Gombnyomás típusa",
+                "state": {
+                    "double": "Kettős",
+                    "long": "Hosszú",
+                    "none": "Nincs",
+                    "short": "Rövid"
+                }
+            },
+            "key_pressed": {
+                "name": "Gomb színe",
+                "state": {
+                    "green": "Zöld",
+                    "none": "Nincs",
+                    "orange": "Narancs",
+                    "red": "Piros",
+                    "yellow": "Sárga"
+                }
+            },
+            "last_day_rain": {
+                "name": "Utolsó 24 óra eső"
+            },
+            "last_hour_rain": {
+                "name": "Utolsó 1 óra eső"
+            },
+            "last_rain": {
+                "name": "Utolsó eső"
+            },
+            "outdoor_temperature": {
+                "name": "Külső hőmérséklet"
+            },
+            "pool_temperature": {
+                "name": "Víz hőmérséklet"
+            },
+            "proxy": {
+                "name": "Proxy"
+            },
+            "temperature": {
+                "name": "Hőmérséklet"
+            },
+            "time_span": {
+                "name": "Időtartam"
+            },
+            "wind_direction": {
+                "name": "Szél irány"
+            },
+            "wind_speed": {
+                "name": "Szél sebesség"
+            }
+        }
+    },
+    "options": {
+        "step": {
+            "proxy": {
+                "data": {
+                    "send_data_to_cloud": "Adataok küldése felhőbe"
+                },
+                "description": "Az integráció proxyszerverként működik a köpont (átjáró) és a felhő között. Szeretnél adatokat felhőbe küldeni?"
+            }
+        }
+    }
+}
