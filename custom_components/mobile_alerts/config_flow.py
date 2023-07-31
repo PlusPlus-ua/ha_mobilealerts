@@ -131,7 +131,7 @@ class MobileAlertsConfigFlowHandler(ConfigFlow, domain=DOMAIN):
         ]
 
         if not unconfigured_gateways:
-            return self.async_abort(reason="no_gateways")
+            self.async_abort(reason="no_gateways")
 
         if len(unconfigured_gateways) == 1:
             self._gateway = unconfigured_gateways[0]
