@@ -2,8 +2,10 @@
 from __future__ import annotations
 
 import logging
+import asyncio #Home Assistant's built-in scheduler
 
 from homeassistant.const import Platform
+from homeassistant.components.network import async_get_source_ip
 from mobilealerts import Gateway, Sensor, SensorHandler
 
 from .base import MobileAlertesBaseCoordinator
@@ -50,3 +52,17 @@ class MobileAlertesDataCoordinator(MobileAlertesBaseCoordinator, SensorHandler):
     async def sensor_updated(self, sensor: Sensor) -> None:
         _LOGGER.debug("sensor_updated %r", sensor)
         self.async_set_updated_data({})
+    
+    async def update_proxy_ip(self) -> None:
+        """Update the proxy IP on the MobileAlert gateway."""
+        # Add your logic to update the proxy IP
+        proxy_ip = await async_get_source_ip(self.hass, self._gateway.ip_address)
+        _LOGGER.debug("Updating proxy IP to %s", proxy_ip)
+        self._proxy.set_ip(proxy_ip)
+
+    async def periodic_update_proxy_ip(self) -> None:
+        """Periodically update the proxy IP."""
+        while True:
+            await self.update_proxy_ip()
+            # Set the interval for updating the proxy IP (e.g., every 1 hour)
+            await asyncio.sleep(3600)
