@@ -64,5 +64,5 @@ class MobileAlertesDataCoordinator(MobileAlertesBaseCoordinator, SensorHandler):
         """Periodically update the proxy IP."""
         while True:
             await self.update_proxy_ip()
-            # Set the interval for updating the proxy IP (e.g., every 1 hour)
-            await asyncio.sleep(3600)
+            # Set the interval for updating the proxy IP (e.g., every Once a Week)
+            await asyncio.sleep(86400)
