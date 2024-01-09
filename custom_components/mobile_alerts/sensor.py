@@ -7,6 +7,7 @@ from typing import Any, Callable
 
 import copy
 import logging
+import dataclasses
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
@@ -158,7 +159,10 @@ class MobileAlertesGatewaySensor(SensorEntity):
         )
         super().__init__()
         self._gateway = gateway
-        description.translation_key = description.key
+        description = dataclasses.replace(
+            description,
+            translation_key = description.key
+        )
         self.entity_description = description
         self._attr_has_entity_name = True
         self._attr_device_class = None
@@ -188,20 +192,32 @@ class MobileAlertesSensor(MobileAlertesEntity, SensorEntity):
         super().__init__(coordinator, sensor, measurement)
         if description is None and measurement is not None:
             description = copy.deepcopy(descriptions[measurement.type])
-            description.name = measurement.name
-            description.key = (
-                measurement.name.lower().replace(" ", "_").replace("/", "_")
+            description = dataclasses.replace(
+                description,
+                name = measurement.name,
+                key = (
+                    measurement.name.lower().replace(" ", "_").replace("/", "_")
+                )
             )
+            
             if description.device_class == SensorDeviceClass.TEMPERATURE:
                 if measurement.prefix:
                     if measurement.prefix == "Pool":
-                        description.icon = "mdi:pool-thermometer"
+                        description = dataclasses.replace(
+                            description,
+                            icon = "mdi:pool-thermometer"
+                        )
                     else:
-                        description.icon = "mdi:home-thermometer"
-
+                        description = dataclasses.replace(
+                            description,
+                            icon = "mdi:home-thermometer"
+                        )  
         if description is not None and description.translation_key is None:
-            description.translation_key = description.key
-
+            description = dataclasses.replace(
+                description,
+                translation_key = description.key
+            )
+            
         _LOGGER.debug("translation_key %s", description.translation_key)
 
         self.entity_description = description
