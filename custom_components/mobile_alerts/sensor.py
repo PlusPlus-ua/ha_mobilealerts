@@ -203,11 +203,16 @@ class MobileAlertesSensor(MobileAlertesEntity, SensorEntity):
             if description.device_class == SensorDeviceClass.TEMPERATURE:
                 if measurement.prefix:
                     if measurement.prefix == "Pool":
-                        description.icon = "mdi:pool-thermometer"
+                        description = dataclasses.replace(
+                            description,
+                            icon = "mdi:pool-thermometer"
+                        )
                     else:
-                        description.icon = "mdi:home-thermometer"
-
-         if description is not None and description.translation_key is None:
+                        description = dataclasses.replace(
+                            description,
+                            icon = "mdi:home-thermometer"
+                        )  
+        if description is not None and description.translation_key is None:
             description = dataclasses.replace(
                 description,
                 translation_key = description.key
