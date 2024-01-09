@@ -7,6 +7,7 @@ import copy
 import datetime
 import logging
 import time
+import dataclasses
 
 from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,
