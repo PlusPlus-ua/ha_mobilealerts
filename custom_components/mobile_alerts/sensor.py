@@ -7,6 +7,7 @@ from typing import Any, Callable
 
 import copy
 import logging
+import dataclasses
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
