@@ -117,7 +117,10 @@ class MobileAlertesBinarySensor(MobileAlertesEntity, BinarySensorEntity):
             )
 
         if description is not None and description.translation_key is None:
-            description.translation_key = description.key
+            description = dataclasses.replace(
+                description,
+                translation_key = description.key
+            )
 
         _LOGGER.debug("translation_key %s", description.translation_key)
 
