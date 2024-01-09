@@ -111,9 +111,12 @@ class MobileAlertesBinarySensor(MobileAlertesEntity, BinarySensorEntity):
         super().__init__(coordinator, sensor, measurement)
         if description is None and measurement is not None:
             description = copy.deepcopy(descriptions[measurement.type])
-            description.name = measurement.name
-            description.key = (
-                measurement.name.lower().replace(" ", "_").replace("/", "_")
+            description = dataclasses.replace(
+                description,
+                name = measurement.name,
+                key = (
+                    measurement.name.lower().replace(" ", "_").replace("/", "_")
+                )
             )
 
         if description is not None and description.translation_key is None:
