@@ -192,7 +192,7 @@ class MobileAlertesSensor(MobileAlertesEntity, SensorEntity):
         super().__init__(coordinator, sensor, measurement)
         if description is None and measurement is not None:
             description = copy.deepcopy(descriptions[measurement.type])
-           description = dataclasses.replace(
+            description = dataclasses.replace(
                 description,
                 name = measurement.name,
                 key = (
