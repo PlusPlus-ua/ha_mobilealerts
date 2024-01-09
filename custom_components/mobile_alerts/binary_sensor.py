@@ -77,7 +77,10 @@ class MobileAlertesGatewayBinarySensor(BinarySensorEntity):
         """Initialize the sensor."""
         super().__init__()
         self._gateway = gateway
-        description.translation_key = description.key
+        description = dataclasses.replace(
+            description,
+            translation_key = description.key
+        )
         self.entity_description = description
         self._attr_has_entity_name = True
         self._attr_device_class = None
