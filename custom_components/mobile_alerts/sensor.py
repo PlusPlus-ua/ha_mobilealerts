@@ -108,7 +108,6 @@ descriptions: dict[MeasurementType, SensorEntityDescription] = {
         key=None,
         icon="mdi:water",
         state_class=SensorStateClass.TOTAL_INCREASING,
-        state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfLength.MILLIMETERS,
     ),
     MeasurementType.TIME_SPAN: SensorEntityDescription(
