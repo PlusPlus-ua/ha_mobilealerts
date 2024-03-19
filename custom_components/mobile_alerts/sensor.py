@@ -95,7 +95,7 @@ descriptions: dict[MeasurementType, SensorEntityDescription] = {
     MeasurementType.CO2: SensorEntityDescription(
         key=None,
         device_class=SensorDeviceClass.CO2,
-        state_class=SensorStateClass.MEASUREMENT
+        state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=CONCENTRATION_PARTS_PER_MILLION,
     ),
     MeasurementType.AIR_PRESSURE: SensorEntityDescription(
