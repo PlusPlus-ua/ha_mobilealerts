@@ -6,6 +6,7 @@ from typing import Any
 import dataclasses
 import logging
 import time
+import asyncio #Home Assistant's built-in scheduler
 from datetime import datetime, timedelta
 
 from homeassistant.config_entries import ConfigEntry
@@ -100,7 +101,7 @@ class MobileAlertesBaseCoordinator(DataUpdateCoordinator):
         return self._proxy
 
 
-@dataclasses.dataclass
+@dataclasses.dataclass(frozen=True)
 class MobileAlertesExtraStoredData(ExtraStoredData):
     """Object to hold extra stored data."""
 
