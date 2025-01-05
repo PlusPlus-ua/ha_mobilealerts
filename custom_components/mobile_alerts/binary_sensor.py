@@ -7,6 +7,7 @@ import copy
 import datetime
 import logging
 import time
+import dataclasses
 
 from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,
@@ -76,7 +77,10 @@ class MobileAlertesGatewayBinarySensor(BinarySensorEntity):
         """Initialize the sensor."""
         super().__init__()
         self._gateway = gateway
-        description.translation_key = description.key
+        description = dataclasses.replace(
+            description,
+            translation_key = description.key
+        )
         self.entity_description = description
         self._attr_has_entity_name = True
         self._attr_device_class = None
@@ -107,13 +111,19 @@ class MobileAlertesBinarySensor(MobileAlertesEntity, BinarySensorEntity):
         super().__init__(coordinator, sensor, measurement)
         if description is None and measurement is not None:
             description = copy.deepcopy(descriptions[measurement.type])
-            description.name = measurement.name
-            description.key = (
-                measurement.name.lower().replace(" ", "_").replace("/", "_")
+            description = dataclasses.replace(
+                description,
+                name = measurement.name,
+                key = (
+                    measurement.name.lower().replace(" ", "_").replace("/", "_")
+                )
             )
 
         if description is not None and description.translation_key is None:
-            description.translation_key = description.key
+            description = dataclasses.replace(
+                description,
+                translation_key = description.key
+            )
 
         _LOGGER.debug("translation_key %s", description.translation_key)
 
@@ -168,7 +178,7 @@ class MobileAlertesIsRainingBinarySensor(MobileAlertesBinarySensor):
                     time.ctime(time_span_sensor.last_update),
                 )
                 value = (
-                    (int(time_span_sensor._attr_native_value) == 0) and
+                    (int(float(time_span_sensor._attr_native_value)) == 0) and
                     (
                         time_span_sensor.last_update >= 
                         time.time() - LAST_RAIN_PERIOD
@@ -184,6 +194,7 @@ class MobileAlertesIsRainingBinarySensor(MobileAlertesBinarySensor):
         return time_span_sensor is not None and time_span_sensor.available
 
     
+
 def create_gateway_binary_sensor_entities(
     gateway: Gateway,
 ) -> list[MobileAlertesGatewayBinarySensor]:

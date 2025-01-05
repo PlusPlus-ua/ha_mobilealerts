@@ -2,7 +2,7 @@
 
 from typing_extensions import Final
 
-from homeassistant.backports.enum import StrEnum
+from enum import StrEnum
 from mobilealerts import MeasurementType
 
 DOMAIN: Final = "mobile_alerts"

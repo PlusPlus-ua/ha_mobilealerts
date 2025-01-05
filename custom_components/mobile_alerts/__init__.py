@@ -27,7 +27,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Mobile-Alerts from a config entry."""
     _LOGGER.debug("async_setup_entry %r", entry.as_dict())
 
-    gateway = Gateway(entry.unique_id)
+    local_ip = await async_get_source_ip(hass)
+    gateway = Gateway(entry.unique_id, local_ip)
     gateway.send_data_to_cloud = entry.options.get(CONF_SEND_DATA_TO_CLOUD, True)
     if not await gateway.init():
         raise ConfigEntryNotReady("Error initialization of MobileAlerts Gateway (%s)", gateway.gateway_id)

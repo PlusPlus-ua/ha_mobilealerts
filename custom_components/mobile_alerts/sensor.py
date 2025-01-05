@@ -7,6 +7,7 @@ from typing import Any, Callable
 
 import copy
 import logging
+import dataclasses
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
@@ -82,21 +83,25 @@ descriptions: dict[MeasurementType, SensorEntityDescription] = {
     MeasurementType.TEMPERATURE: SensorEntityDescription(
         key=None,
         device_class=SensorDeviceClass.TEMPERATURE,
+        state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
     ),
     MeasurementType.HUMIDITY: SensorEntityDescription(
         key=None,
         device_class=SensorDeviceClass.HUMIDITY,
+        state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=PERCENTAGE,
     ),
     MeasurementType.CO2: SensorEntityDescription(
         key=None,
         device_class=SensorDeviceClass.CO2,
+        state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=CONCENTRATION_PARTS_PER_MILLION,
     ),
     MeasurementType.AIR_PRESSURE: SensorEntityDescription(
         key=None,
         device_class=SensorDeviceClass.PRESSURE,
+        state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfPressure.HPA,
     ),
     MeasurementType.RAIN: SensorEntityDescription(
@@ -109,18 +114,21 @@ descriptions: dict[MeasurementType, SensorEntityDescription] = {
         key=None,
         icon="mdi:timer",
         device_class=SensorDeviceClass.DURATION,
+        state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfTime.SECONDS,
     ),
     MeasurementType.WIND_SPEED: SensorEntityDescription(
         key=None,
         icon="mdi:weather-windy",
         device_class=SensorDeviceClass.WIND_SPEED,
+        state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfSpeed.METERS_PER_SECOND,
     ),
     MeasurementType.GUST: SensorEntityDescription(
         key=None,
         icon="mdi:weather-windy",
         device_class=SensorDeviceClass.WIND_SPEED,
+        state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfSpeed.METERS_PER_SECOND,
     ),
     MeasurementType.WIND_DIRECTION: SensorEntityDescription(
@@ -133,6 +141,7 @@ descriptions: dict[MeasurementType, SensorEntityDescription] = {
         key=None,
         icon="mdi:button-pointer",
         device_class=SensorDeviceClass.ENUM,
+        state_class=SensorStateClass.MEASUREMENT,
         options=["none", "green", "orange", "red", "yellow"],
     ),
     MeasurementType.KEY_PRESS_TYPE: SensorEntityDescription(
@@ -158,7 +167,10 @@ class MobileAlertesGatewaySensor(SensorEntity):
         )
         super().__init__()
         self._gateway = gateway
-        description.translation_key = description.key
+        description = dataclasses.replace(
+            description,
+            translation_key = description.key
+        )
         self.entity_description = description
         self._attr_has_entity_name = True
         self._attr_device_class = None
@@ -188,20 +200,32 @@ class MobileAlertesSensor(MobileAlertesEntity, SensorEntity):
         super().__init__(coordinator, sensor, measurement)
         if description is None and measurement is not None:
             description = copy.deepcopy(descriptions[measurement.type])
-            description.name = measurement.name
-            description.key = (
-                measurement.name.lower().replace(" ", "_").replace("/", "_")
+            description = dataclasses.replace(
+                description,
+                name = measurement.name,
+                key = (
+                    measurement.name.lower().replace(" ", "_").replace("/", "_")
+                )
             )
+            
             if description.device_class == SensorDeviceClass.TEMPERATURE:
                 if measurement.prefix:
                     if measurement.prefix == "Pool":
-                        description.icon = "mdi:pool-thermometer"
+                        description = dataclasses.replace(
+                            description,
+                            icon = "mdi:pool-thermometer"
+                        )
                     else:
-                        description.icon = "mdi:home-thermometer"
-
+                        description = dataclasses.replace(
+                            description,
+                            icon = "mdi:home-thermometer"
+                        )  
         if description is not None and description.translation_key is None:
-            description.translation_key = description.key
-
+            description = dataclasses.replace(
+                description,
+                translation_key = description.key
+            )
+            
         _LOGGER.debug("translation_key %s", description.translation_key)
 
         self.entity_description = description
@@ -385,7 +409,7 @@ class MobileAlertesPeriodRainSensor(MobileAlertesSensor):
                 )
                 self._last_update = last_rain_time
 
-        for measurement_time in self._measurements.keys():
+        for measurement_time in list(self._measurements.keys()):
             if measurement_time < (now - self._period):
                 _LOGGER.debug(
                     "period_rain update_data_from_sensor removed (%s: %s)",
