@@ -19,6 +19,8 @@ from homeassistant.helpers.entity import DeviceInfo, EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from mobilealerts import Gateway, Measurement, MeasurementType, Sensor
 
+from dataclasses import replace
+
 from .base import MobileAlertesBaseCoordinator, MobileAlertesEntity
 from .const import BINARY_MEASUREMENT_TYPES, DOMAIN, LAST_RAIN_PERIOD
 from .sensor import MobileAlertesSensor
@@ -76,7 +78,7 @@ class MobileAlertesGatewayBinarySensor(BinarySensorEntity):
         """Initialize the sensor."""
         super().__init__()
         self._gateway = gateway
-        description.translation_key = description.key
+        #description.translation_key = description.key
         self.entity_description = description
         self._attr_has_entity_name = True
         self._attr_device_class = None
@@ -112,8 +114,11 @@ class MobileAlertesBinarySensor(MobileAlertesEntity, BinarySensorEntity):
                 measurement.name.lower().replace(" ", "_").replace("/", "_")
             )
 
+        #if description is not None and description.translation_key is None:
+        #    description.translation_key = description.key
+
         if description is not None and description.translation_key is None:
-            description.translation_key = description.key
+            description = replace(description, translation_key=description.key)
 
         _LOGGER.debug("translation_key %s", description.translation_key)
 
