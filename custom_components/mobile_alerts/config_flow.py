@@ -24,7 +24,7 @@ _LOGGER = logging.getLogger(__name__)
 class MobileAlertsOptionsFlowHandler(OptionsFlow):
     """Handle a MobileAlerts options flow."""
 
-    def __init__(self, config_entry: ConfigEntry) -> None:
+    def __init__(self) -> None:
         """Initialize options flow."""
 
     async def async_step_init(
