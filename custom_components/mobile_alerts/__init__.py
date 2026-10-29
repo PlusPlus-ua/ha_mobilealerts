@@ -42,17 +42,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await proxy.start()
     proxy.attach_gateway(gateway)
 
+    # Relay cloud data straight to the Mobile-Alerts cloud instead of via the
+    # gateway's previously configured upstream proxy. If that proxy was a local
+    # server that has since been removed (e.g. maserver), routing cloud resends
+    # through it fails with connection-refused; forwarding directly avoids that
+    # while still keeping the official app working. (No public setter exists.)
+    gateway._orig_use_proxy = False  # noqa: SLF001
+
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
 
     await coordinator.async_get_or_create_gateway_device()
 
     device_registry = dr.async_get(hass)
 
-    for device in device_registry.devices.values():
-        if (
-            entry.entry_id in device.config_entries
-            and (DOMAIN, gateway.gateway_id) not in device.identifiers
-        ):
+    for device in dr.async_entries_for_config_entry(device_registry, entry.entry_id):
+        if (DOMAIN, gateway.gateway_id) not in device.identifiers:
             for identifier in device.identifiers:
                 if identifier[0] == DOMAIN:
                     gateway.add_sensor(Sensor(gateway, identifier[1], device.name))
@@ -60,6 +64,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     break
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+
+    entry.async_on_unload(entry.add_update_listener(_async_update_listener))
 
     # await gateway.handle_sensor_update(bytes.fromhex("E06322C5E6241829EFCB988DC0D3E200E735273800E6352738010405090C100202020202020000000000000000000000000000000000000000000000000000"), 0x79)
     # await gateway.handle_sensor_update(bytes.fromhex("D66322C4331A065526A17A613AF3008C00B50A5F008B00B50A601A000000000000000000000000000000000000000000000000000000000000000000000000"), 0x04)
@@ -70,6 +76,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # await gateway.handle_sensor_update(bytes.fromhex("ce5d8bcb801216ffffffffff4023128e0b04060000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"), 0x3c)
 
     return True
+
+
+async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Reload the config entry when its options change."""
+    await hass.config_entries.async_reload(entry.entry_id)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

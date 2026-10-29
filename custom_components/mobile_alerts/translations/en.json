@@ -144,9 +144,15 @@
         "step": {
             "proxy": {
                 "data": {
-                    "send_data_to_cloud": "Send data to cloud"
+                    "mode": "Mode",
+                    "send_data_to_cloud": "Send data to cloud",
+                    "mqtt_topic_prefix": "MQTT topic prefix"
                 },
-                "description": "The integration acts as proxy server between gateway and cloud. Would you like to send data to cloud?"
+                "data_description": {
+                    "mode": "Expose readings as native Home Assistant entities, or publish them to MQTT in the sarnau/MMMMobileAlerts JSON format.",
+                    "mqtt_topic_prefix": "Topic prefix for MQTT gateway mode. Data is published to <prefix><sensor_id>/json."
+                },
+                "description": "Choose how sensor readings are exposed and whether data is still forwarded to the Mobile-Alerts cloud (needed for the mobile app)."
             }
         }
     }

@@ -1,0 +1,28 @@
+name: Changelog check
+
+# Fails when CHANGELOG.md is out of step with the integration:
+# - manifest.json version must match the newest CHANGELOG heading
+# - a change to custom_components/ must come with a CHANGELOG.md change
+# Logic lives in .github/scripts/check_changelog.py (runnable locally).
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0   # the script diffs against the previous commit
+
+      - name: Check CHANGELOG.md against manifest.json
+        env:
+          BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: python3 .github/scripts/check_changelog.py

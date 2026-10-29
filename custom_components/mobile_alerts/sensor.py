@@ -16,9 +16,9 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
-    CONCENTRATION_PARTS_PER_MILLION,
     DEGREE,
     PERCENTAGE,
+    Platform,
     UnitOfLength,
     UnitOfPressure,
     UnitOfSpeed,
@@ -29,6 +29,8 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo, EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from mobilealerts import Gateway, Measurement, MeasurementError, MeasurementType, Sensor
+
+from dataclasses import replace
 
 from .base import MobileAlertesBaseCoordinator, MobileAlertesEntity
 from .const import (
@@ -42,6 +44,16 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
+# CONCENTRATION_PARTS_PER_MILLION is deprecated (removal in HA Core 2027.8) in favour of
+# UnitOfRatio.PARTS_PER_MILLION. Both are the string "ppm", so statistics are unaffected.
+# UnitOfRatio does not exist in older Home Assistant releases, hence the fallback.
+try:
+    from homeassistant.const import UnitOfRatio
+
+    _UNIT_PPM = UnitOfRatio.PARTS_PER_MILLION
+except ImportError:
+    from homeassistant.const import CONCENTRATION_PARTS_PER_MILLION as _UNIT_PPM
+
 
 gateway_descriptions: list[tuple[SensorEntityDescription, Callable[[Gateway], str]]] = [
     (
@@ -51,8 +63,8 @@ gateway_descriptions: list[tuple[SensorEntityDescription, Callable[[Gateway], st
             entity_category=EntityCategory.DIAGNOSTIC,
         ),
         lambda gateway: ("http://%s:%s") % (
-            gateway.orig_proxy,
-            gateway.orig_proxy_port,
+            gateway.proxy,
+            gateway.proxy_port,
         ),
     ),
 ]
@@ -82,21 +94,25 @@ descriptions: dict[MeasurementType, SensorEntityDescription] = {
     MeasurementType.TEMPERATURE: SensorEntityDescription(
         key=None,
         device_class=SensorDeviceClass.TEMPERATURE,
+        state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
     ),
     MeasurementType.HUMIDITY: SensorEntityDescription(
         key=None,
         device_class=SensorDeviceClass.HUMIDITY,
+        state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=PERCENTAGE,
     ),
     MeasurementType.CO2: SensorEntityDescription(
         key=None,
         device_class=SensorDeviceClass.CO2,
-        native_unit_of_measurement=CONCENTRATION_PARTS_PER_MILLION,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=_UNIT_PPM,
     ),
     MeasurementType.AIR_PRESSURE: SensorEntityDescription(
         key=None,
         device_class=SensorDeviceClass.PRESSURE,
+        state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfPressure.HPA,
     ),
     MeasurementType.RAIN: SensorEntityDescription(
@@ -115,12 +131,14 @@ descriptions: dict[MeasurementType, SensorEntityDescription] = {
         key=None,
         icon="mdi:weather-windy",
         device_class=SensorDeviceClass.WIND_SPEED,
+        state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfSpeed.METERS_PER_SECOND,
     ),
     MeasurementType.GUST: SensorEntityDescription(
         key=None,
         icon="mdi:weather-windy",
         device_class=SensorDeviceClass.WIND_SPEED,
+        state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfSpeed.METERS_PER_SECOND,
     ),
     MeasurementType.WIND_DIRECTION: SensorEntityDescription(
@@ -158,7 +176,8 @@ class MobileAlertesGatewaySensor(SensorEntity):
         )
         super().__init__()
         self._gateway = gateway
-        description.translation_key = description.key
+        if description is not None and description.translation_key is None:
+            description = replace(description, translation_key=description.key)
         self.entity_description = description
         self._attr_has_entity_name = True
         self._attr_device_class = None
@@ -188,21 +207,27 @@ class MobileAlertesSensor(MobileAlertesEntity, SensorEntity):
         super().__init__(coordinator, sensor, measurement)
         if description is None and measurement is not None:
             description = copy.deepcopy(descriptions[measurement.type])
-            description.name = measurement.name
-            description.key = (
-                measurement.name.lower().replace(" ", "_").replace("/", "_")
+            # Erzeuge neue Instanz mit name und key
+            description = replace(
+                description,
+                name=measurement.name,
+                key=measurement.name.lower().replace(" ", "_").replace("/", "_"),
             )
+            # Icon ggf. setzen (mehrfaches replace möglich)
             if description.device_class == SensorDeviceClass.TEMPERATURE:
                 if measurement.prefix:
+                    icon = None
                     if measurement.prefix == "Pool":
-                        description.icon = "mdi:pool-thermometer"
+                        icon = "mdi:pool-thermometer"
                     else:
-                        description.icon = "mdi:home-thermometer"
+                        icon = "mdi:home-thermometer"
+                    description = replace(description, icon=icon)
 
-        if description is not None and description.translation_key is None:
-            description.translation_key = description.key
+        # translation_key setzen, falls nötig
+        if description is not None and getattr(description, "translation_key", None) is None:
+            description = replace(description, translation_key=description.key)
 
-        _LOGGER.debug("translation_key %s", description.translation_key)
+        _LOGGER.debug("translation_key %s", getattr(description, "translation_key", None))
 
         self.entity_description = description
 
@@ -233,95 +258,6 @@ class MobileAlertesSensor(MobileAlertesEntity, SensorEntity):
             self._attr_native_value = None
         _LOGGER.debug("update_data_from_last_state %s",
                       self._attr_native_value)
-
-'''
-class MobileAlertesRainSensor(MobileAlertesSensor):
-    """Representation of a MobileAlertes general rain sensor."""
-
-    def __init__(
-        self,
-        coordinator: MobileAlertesBaseCoordinator,
-        sensor: Sensor,
-        description: SensorEntityDescription,
-    ) -> None:
-        """Initialize the sensor."""
-        super().__init__(coordinator, sensor, None, description)
-        self._value_is_calculated = True
-        self._attr_should_poll = True
-        self._last_update: float = 0.0
-        self._rain_sensor: MobileAlertesSensor | None = None
-
-    def _get_rain_sensor(self) -> MobileAlertesSensor | None:
-        if self._rain_sensor is None:
-            rain_entity = self._coordinator.get_entity(
-                self._sensor.measurements[1])
-            if type(rain_entity) == MobileAlertesSensor:
-                self._rain_sensor = rain_entity
-                self._rain_sensor.add_dependent(self)
-
-        return self._rain_sensor
-
-    def _get_last_rain_value(self) -> float | None:
-        rain_sensor = self._get_rain_sensor()
-        if rain_sensor is not None:
-            curr_value = float(rain_sensor._attr_native_value)
-            prior_value = rain_sensor.prior_value
-            rain_sensor.last_update
-            _LOGGER.debug(
-                "last_rain curr_value %s prior_value %s self._last_update %s rain_sensor.last_update %s",
-                curr_value,
-                prior_value,
-                datetime.fromtimestamp(self._last_update).isoformat(),
-                datetime.fromtimestamp(rain_sensor.last_update).isoformat(),
-            )
-            if prior_value >= 0 and rain_sensor.last_update > self._last_update:
-                return curr_value - prior_value
-            else:
-                return None
-        else:
-            return None
-
-    def update_data_from_last_state(self) -> None:
-        """Update data from stored last state."""
-        super().update_data_from_last_state()
-        _LOGGER.debug("rain update_data_from_last_state")
-        if self._last_extra_data is not None:
-            _LOGGER.debug(
-                "rain update_data_from_last_state self._last_extra_data is not None")
-            extra_state_attributes = self._last_extra_data.as_dict()
-            if extra_state_attributes is not None:
-                last_update_iso = extra_state_attributes.get(
-                    STATE_ATTR_LAST_UPDATED, None)
-                if last_update_iso is not None:
-                    _LOGGER.debug(
-                        "rain update_data_from_last_state last_update_iso %s", last_update_iso)
-                    self._last_update = datetime.fromisoformat(
-                        last_update_iso).timestamp()
-                    self._last_extra_data = None
-
-    @property
-    def available(self) -> bool:
-        """Return if entity is available."""
-        rain_sensor = self._get_rain_sensor()
-        return rain_sensor is not None and rain_sensor.available
-
-
-class MobileAlertesLastRainSensor(MobileAlertesRainSensor):
-    """Representation of a MobileAlertes last rain sensor."""
-
-    def update_data_from_sensor(self) -> None:
-        """Update data from the sensor."""
-        self._attr_native_value = self._get_last_rain_value()
-        if self._attr_native_value is None:
-            self._attr_native_value = 0.0
-        _LOGGER.debug("rain update_data_from_sensor %s",
-                      self._attr_native_value)
-        attr: dict[str, Any] = {
-            STATE_ATTR_LAST_UPDATED:
-            datetime.fromtimestamp(self._last_update).isoformat()
-        }
-        self._attr_extra_state_attributes = attr
-'''
 
 class MobileAlertesPeriodRainSensor(MobileAlertesSensor):
     """Representation of a MobileAlertes rain by period sensor."""
@@ -385,7 +321,9 @@ class MobileAlertesPeriodRainSensor(MobileAlertesSensor):
                 )
                 self._last_update = last_rain_time
 
-        for measurement_time in self._measurements.keys():
+        # Iterate over a copy: expired entries are popped inside the loop, and
+        # mutating a dict while iterating its keys raises RuntimeError.
+        for measurement_time in list(self._measurements.keys()):
             if measurement_time < (now - self._period):
                 _LOGGER.debug(
                     "period_rain update_data_from_sensor removed (%s: %s)",
@@ -505,6 +443,10 @@ async def async_setup_entry(
     _LOGGER.debug("async_setup_entry %s", entry)
 
     coordinator: MobileAlertesBaseCoordinator = hass.data[DOMAIN][entry.entry_id]
+    coordinator.register_add_entities(Platform.SENSOR, async_add_entities)
+    entry.async_on_unload(
+        lambda: coordinator.unregister_add_entities(Platform.SENSOR)
+    )
     async_add_entities(create_gateway_sensor_entities(coordinator.gateway))
 
     sensors: list[Sensor] = coordinator.gateway.sensors
